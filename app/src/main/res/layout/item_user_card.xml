@@ -34,12 +34,6 @@
             android:layout_marginTop="6dp"
             android:textColor="@color/blue_700" />
 
-        <TextView
-            android:id="@+id/tvStatus"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
-            android:textColor="@color/green_500" />
 
     </LinearLayout>
 

@@ -15,6 +15,22 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.Warehousemedical"
         android:usesCleartextTraffic="true">
+        
+        <activity
+            android:name=".ui.activities.AddEditItemActivity"
+            android:exported="false"
+            android:label="Item Management" />
+            
+        <activity
+            android:name=".ui.activities.AddEditUserActivity"
+            android:exported="false"
+            android:label="User Management" />
+            
+        <activity
+            android:name=".ui.activities.CreateInputInvoiceActivity"
+            android:exported="false"
+            android:label="Create Import" />
+
         <activity
             android:name=".ui.activities.CustomerOrderDetailActivity"
             android:exported="false" />
@@ -38,7 +54,6 @@
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
-
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>

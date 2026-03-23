@@ -1,7 +1,6 @@
 package com.example.warehouse_medical.dtos;
 
 import com.example.warehouse_medical.models.CartItem;
-import com.example.warehouse_medical.models.User;
 import com.google.gson.annotations.SerializedName;
 
 import java.io.Serializable;
@@ -12,7 +11,7 @@ public class CartResponseData implements Serializable {
     private String id;
 
     @SerializedName(value = "customerId", alternate = {"customer"})
-    private User customerId;
+    private String customerId;
 
     private List<CartItem> items;
     private Double totalAmount;
@@ -28,11 +27,11 @@ public class CartResponseData implements Serializable {
         this.id = id;
     }
 
-    public User getCustomerId() {
+    public String getCustomerId() {
         return customerId;
     }
 
-    public void setCustomerId(User customerId) {
+    public void setCustomerId(String customerId) {
         this.customerId = customerId;
     }
 
@@ -45,7 +44,10 @@ public class CartResponseData implements Serializable {
     }
 
     public Double getTotalAmount() {
-        return totalAmount;
+        if (totalAmount != null && totalAmount > 0) {
+            return totalAmount;
+        }
+        return calculateTotalFromItems();
     }
 
     public void setTotalAmount(Double totalAmount) {
@@ -74,5 +76,25 @@ public class CartResponseData implements Serializable {
 
     public void setUpdatedAt(String updatedAt) {
         this.updatedAt = updatedAt;
+    }
+
+    private Double calculateTotalFromItems() {
+        double total = 0.0;
+        if (items != null) {
+            for (CartItem item : items) {
+                if (item.getSubtotal() != null) {
+                    total += item.getSubtotal();
+                } else if (item.getQuantity() != null) {
+                    Double price = item.getSalePrice();
+                    if (price == null && item.getItemId() != null) {
+                        price = item.getItemId().getSalePrice();
+                    }
+                    if (price != null) {
+                        total += price * item.getQuantity();
+                    }
+                }
+            }
+        }
+        return total;
     }
 }

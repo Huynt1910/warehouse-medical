@@ -1,51 +1,42 @@
 package com.example.warehouse_medical.models;
 
-import com.google.gson.annotations.SerializedName;
-
 import java.io.Serializable;
 
 public class Pagination implements Serializable {
-    @SerializedName(value = "page", alternate = {"currentPage"})
-    private Integer page;
+    private int page;
+    private int limit;
+    private int totalItems;
+    private int totalPages;
 
-    @SerializedName(value = "limit", alternate = {"pageSize"})
-    private Integer limit;
-
-    @SerializedName(value = "total", alternate = {"totalItems", "count"})
-    private Integer total;
-
-    @SerializedName(value = "totalPages", alternate = {"pageCount"})
-    private Integer totalPages;
-
-    public Integer getPage() {
+    public int getPage() {
         return page;
     }
 
-    public void setPage(Integer page) {
+    public void setPage(int page) {
         this.page = page;
     }
 
-    public Integer getLimit() {
+    public int getLimit() {
         return limit;
     }
 
-    public void setLimit(Integer limit) {
+    public void setLimit(int limit) {
         this.limit = limit;
     }
 
-    public Integer getTotal() {
-        return total;
+    public int getTotalItems() {
+        return totalItems;
     }
 
-    public void setTotal(Integer total) {
-        this.total = total;
+    public void setTotalItems(int totalItems) {
+        this.totalItems = totalItems;
     }
 
-    public Integer getTotalPages() {
+    public int getTotalPages() {
         return totalPages;
     }
 
-    public void setTotalPages(Integer totalPages) {
+    public void setTotalPages(int totalPages) {
         this.totalPages = totalPages;
     }
 }

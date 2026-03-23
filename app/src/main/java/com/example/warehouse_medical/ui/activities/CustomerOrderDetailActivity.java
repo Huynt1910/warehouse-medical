@@ -17,6 +17,7 @@ import com.example.warehouse_medical.adapters.OrderLineAdapter;
 import com.example.warehouse_medical.models.Order;
 import com.example.warehouse_medical.repositories.OrderRepository;
 import com.example.warehouse_medical.repositories.RepositoryCallback;
+import com.example.warehouse_medical.storage.SessionManager;
 import com.example.warehouse_medical.utils.AppConstants;
 import com.example.warehouse_medical.utils.CurrencyUtils;
 import com.google.android.material.button.MaterialButton;
@@ -24,6 +25,7 @@ import com.google.android.material.button.MaterialButton;
 public class CustomerOrderDetailActivity extends AppCompatActivity {
 
     private OrderRepository orderRepository;
+    private SessionManager sessionManager;
     private ProgressBar progressBar;
     private LinearLayout contentLayout;
     private TextView tvOrderCode;
@@ -31,6 +33,7 @@ public class CustomerOrderDetailActivity extends AppCompatActivity {
     private TextView tvOrderNote;
     private TextView tvTotalAmount;
     private MaterialButton btnCancelOrder;
+    private MaterialButton btnConfirmOrder;
     private OrderLineAdapter adapter;
     private String orderId;
 
@@ -41,6 +44,7 @@ public class CustomerOrderDetailActivity extends AppCompatActivity {
         setTitle(R.string.order_detail);
 
         orderRepository = new OrderRepository(this);
+        sessionManager = new SessionManager(this);
         orderId = getIntent().getStringExtra(AppConstants.EXTRA_ORDER_ID);
 
         progressBar = findViewById(R.id.progressBar);
@@ -50,6 +54,7 @@ public class CustomerOrderDetailActivity extends AppCompatActivity {
         tvOrderNote = findViewById(R.id.tvOrderNote);
         tvTotalAmount = findViewById(R.id.tvTotalAmount);
         btnCancelOrder = findViewById(R.id.btnCancelOrder);
+        btnConfirmOrder = findViewById(R.id.btnConfirmOrder);
         RecyclerView recyclerView = findViewById(R.id.recyclerView);
 
         adapter = new OrderLineAdapter();
@@ -57,9 +62,11 @@ public class CustomerOrderDetailActivity extends AppCompatActivity {
         recyclerView.setAdapter(adapter);
 
         btnCancelOrder.setOnClickListener(v -> cancelOrder());
+        btnConfirmOrder.setOnClickListener(v -> confirmOrder());
+        findViewById(R.id.btnBack).setOnClickListener(v -> finish());
 
         if (orderId == null || orderId.trim().isEmpty()) {
-            Toast.makeText(this, R.string.unknown_error, Toast.LENGTH_SHORT).show();
+            Toast.makeText(this, "Order ID not found", Toast.LENGTH_SHORT).show();
             finish();
             return;
         }
@@ -87,16 +94,40 @@ public class CustomerOrderDetailActivity extends AppCompatActivity {
     }
 
     private void bindOrder(Order order) {
-        tvOrderCode.setText(getString(R.string.order_code_label, order.getCode()));
-        tvOrderStatus.setText(getString(R.string.order_status_label, order.getStatus()));
-        String note = order.getNote() == null || order.getNote().trim().isEmpty()
-                ? getString(R.string.batch_not_available) : order.getNote();
-        tvOrderNote.setText(getString(R.string.order_note_label, note));
-        tvTotalAmount.setText(getString(R.string.total_amount, CurrencyUtils.formatCurrency(order.getTotalAmount())));
+        tvOrderCode.setText("Order #" + order.getCode());
+        tvOrderStatus.setText("Status: " + order.getStatus());
+        tvOrderNote.setText("Note: " + (order.getNote() != null ? order.getNote() : "No note"));
+        tvTotalAmount.setText("Total: " + CurrencyUtils.formatCurrency(order.getTotalAmount()));
         adapter.submitList(order.getItems());
 
-        boolean canCancel = "PENDING_CONFIRMATION".equals(order.getStatus());
+        String userRole = sessionManager.getRole();
+        boolean isStaff = "STAFF".equalsIgnoreCase(userRole) || "ADMIN".equalsIgnoreCase(userRole);
+        boolean isPending = "PENDING".equalsIgnoreCase(order.getStatus()) || "PENDING_CONFIRMATION".equalsIgnoreCase(order.getStatus());
+
+        // Show confirm button only for staff on pending orders
+        btnConfirmOrder.setVisibility(isStaff && isPending ? View.VISIBLE : View.GONE);
+        
+        // Customer can only cancel pending confirmation orders
+        boolean canCancel = isPending && !isStaff;
         btnCancelOrder.setVisibility(canCancel ? View.VISIBLE : View.GONE);
+    }
+
+    private void confirmOrder() {
+        progressBar.setVisibility(View.VISIBLE);
+        orderRepository.confirmOrder(orderId, new RepositoryCallback<Order>() {
+            @Override
+            public void onSuccess(Order data) {
+                progressBar.setVisibility(View.GONE);
+                Toast.makeText(CustomerOrderDetailActivity.this, "Order confirmed successfully", Toast.LENGTH_SHORT).show();
+                finish(); // Go back to list
+            }
+
+            @Override
+            public void onError(String message) {
+                progressBar.setVisibility(View.GONE);
+                Toast.makeText(CustomerOrderDetailActivity.this, "Failed: " + message, Toast.LENGTH_SHORT).show();
+            }
+        });
     }
 
     private void cancelOrder() {
@@ -105,7 +136,7 @@ public class CustomerOrderDetailActivity extends AppCompatActivity {
             @Override
             public void onSuccess(Order data) {
                 progressBar.setVisibility(View.GONE);
-                Toast.makeText(CustomerOrderDetailActivity.this, R.string.order_cancelled, Toast.LENGTH_SHORT).show();
+                Toast.makeText(CustomerOrderDetailActivity.this, "Order cancelled", Toast.LENGTH_SHORT).show();
                 bindOrder(data);
             }
 

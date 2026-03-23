@@ -43,6 +43,7 @@ public class CheckoutActivity extends AppCompatActivity {
         TextView tvTotalAmount = findViewById(R.id.tvTotalAmount);
         RecyclerView recyclerView = findViewById(R.id.recyclerView);
         MaterialButton btnPlaceOrder = findViewById(R.id.btnPlaceOrder);
+        MaterialButton btnBack = findViewById(R.id.btnBack);
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             cart = getIntent().getSerializableExtra(AppConstants.EXTRA_CART, CartResponseData.class);
@@ -65,6 +66,7 @@ public class CheckoutActivity extends AppCompatActivity {
         ));
 
         btnPlaceOrder.setOnClickListener(v -> placeOrder());
+        btnBack.setOnClickListener(v -> finish());
     }
 
     @SuppressWarnings("deprecation")
